@@ -93,10 +93,12 @@ void main(void) {
     if (ret) return;
 
     nrfx_timer_extended_compare(&m_timer0, 0, 1000000, 0, false);
-    nrfx_timer_extended_compare(&m_timer0, 1, 2000000, TIMER_SHORTS_COMPARE1_CLEAR_Enabled, false);
+    nrfx_timer_extended_compare(&m_timer0, 1, 2000000, 0, false);
+    nrfx_timer_extended_compare(&m_timer0, 2, 3000000, TIMER_SHORTS_COMPARE1_CLEAR_Enabled, false);
 
     nrfx_timer_extended_compare(&m_timer1, 0, 1000000, 0, false);
-    nrfx_timer_extended_compare(&m_timer1, 1, 2000000, TIMER_SHORTS_COMPARE1_CLEAR_Enabled, false);
+    nrfx_timer_extended_compare(&m_timer1, 1, 2000000, 0, false);
+    nrfx_timer_extended_compare(&m_timer1, 2, 3000000, TIMER_SHORTS_COMPARE1_CLEAR_Enabled, false);
 
     nrfx_timer_enable(&m_timer0);
     nrfx_timer_enable(&m_timer1);
