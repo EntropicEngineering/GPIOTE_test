@@ -61,7 +61,6 @@ APP_ERROR_CHECK(nrfx_ppi_channel_enable(ppi_channel))
     SET_PPI;
     evt_addr = nrfx_timer_compare_event_address_get(&m_timer0, 1);
     SET_PPI;
-    nrfx_gpiote_out_task_enable(LED1_PIN);
     // Toggle LED 2 on PPI FORK of PPI triggered by timer0 channel 1
     APP_ERROR_CHECK(nrfx_gpiote_out_init(LED2_PIN, &gpiote_config));
     task_addr = nrfx_gpiote_out_task_addr_get(LED2_PIN);
@@ -77,9 +76,15 @@ APP_ERROR_CHECK(nrfx_ppi_channel_enable(ppi_channel))
     task_addr = nrfx_gpiote_out_task_addr_get(LED4_PIN);
     evt_addr = nrfx_timer_compare_event_address_get(&m_timer1, 1);
     SET_PPI;
+
     // Toggle LED 3 on PPI FORK of PPI triggered by timer1 channel 1
     task_addr = nrfx_gpiote_out_task_addr_get(LED3_PIN);
     APP_ERROR_CHECK(nrfx_ppi_channel_fork_assign(ppi_channel, task_addr));
+
+    nrfx_gpiote_out_task_enable(LED1_PIN);
+    nrfx_gpiote_out_task_enable(LED2_PIN);
+    nrfx_gpiote_out_task_enable(LED3_PIN);
+    nrfx_gpiote_out_task_enable(LED4_PIN);
 
     return 0;
 }
@@ -93,12 +98,10 @@ void main(void) {
     if (ret) return;
 
     nrfx_timer_extended_compare(&m_timer0, 0, 1000000, 0, false);
-    nrfx_timer_extended_compare(&m_timer0, 1, 2000000, 0, false);
-    nrfx_timer_extended_compare(&m_timer0, 2, 3000000, TIMER_SHORTS_COMPARE1_CLEAR_Enabled, false);
+    nrfx_timer_extended_compare(&m_timer0, 1, 2000000, NRF_TIMER_SHORT_COMPARE1_CLEAR_MASK, false);
 
     nrfx_timer_extended_compare(&m_timer1, 0, 1000000, 0, false);
-    nrfx_timer_extended_compare(&m_timer1, 1, 2000000, 0, false);
-    nrfx_timer_extended_compare(&m_timer1, 2, 3000000, TIMER_SHORTS_COMPARE1_CLEAR_Enabled, false);
+    nrfx_timer_extended_compare(&m_timer1, 1, 2000000, NRF_TIMER_SHORT_COMPARE1_CLEAR_MASK, false);
 
     nrfx_timer_enable(&m_timer0);
     nrfx_timer_enable(&m_timer1);
