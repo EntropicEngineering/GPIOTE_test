@@ -45,41 +45,40 @@ int gpiote_init(void) {
 
     uint32_t task_addr;
     uint32_t evt_addr;
-    nrf_ppi_channel_t ppi_channel;
+    nrf_ppi_channel_t ppi_channel[2][2];
 
     nrfx_gpiote_out_config_t gpiote_config = NRFX_GPIOTE_CONFIG_OUT_TASK_TOGGLE(false);
 
-#define SET_PPI \
-APP_ERROR_CHECK(nrfx_ppi_channel_alloc(&ppi_channel)); \
-APP_ERROR_CHECK(nrfx_ppi_channel_assign(ppi_channel, evt_addr, task_addr)); \
-APP_ERROR_CHECK(nrfx_ppi_channel_enable(ppi_channel))
+#define SET_PPI(T, C) \
+APP_ERROR_CHECK(nrfx_ppi_channel_alloc(&ppi_channel[T][C])); \
+APP_ERROR_CHECK(nrfx_ppi_channel_assign(ppi_channel[T][C], evt_addr, task_addr)); \
+APP_ERROR_CHECK(nrfx_ppi_channel_enable(ppi_channel[T][C]))
 
     // Toggle LED 1 on timer0 channels 0 & 1
     APP_ERROR_CHECK(nrfx_gpiote_out_init(LED1_PIN, &gpiote_config));
     task_addr = nrfx_gpiote_out_task_addr_get(LED1_PIN);
     evt_addr = nrfx_timer_compare_event_address_get(&m_timer0, 0);
-    SET_PPI;
+    SET_PPI(0, 0);
     evt_addr = nrfx_timer_compare_event_address_get(&m_timer0, 1);
-    SET_PPI;
+    SET_PPI(0, 1);
     // Toggle LED 2 on PPI FORK of PPI triggered by timer0 channel 1
     APP_ERROR_CHECK(nrfx_gpiote_out_init(LED2_PIN, &gpiote_config));
     task_addr = nrfx_gpiote_out_task_addr_get(LED2_PIN);
-    APP_ERROR_CHECK(nrfx_ppi_channel_fork_assign(ppi_channel, task_addr));
+    APP_ERROR_CHECK(nrfx_ppi_channel_fork_assign(ppi_channel[0][1], task_addr));
 
     // Toggle LED 3 on timer1 channel 0
     APP_ERROR_CHECK(nrfx_gpiote_out_init(LED3_PIN, &gpiote_config));
     task_addr = nrfx_gpiote_out_task_addr_get(LED3_PIN);
     evt_addr = nrfx_timer_compare_event_address_get(&m_timer1, 0);
-    SET_PPI;
-    // Toggle LED 4 on timer1 channel 1
-    APP_ERROR_CHECK(nrfx_gpiote_out_init(LED4_PIN, &gpiote_config));
-    task_addr = nrfx_gpiote_out_task_addr_get(LED4_PIN);
+    SET_PPI(1, 0);
     evt_addr = nrfx_timer_compare_event_address_get(&m_timer1, 1);
-    SET_PPI;
-
-    // Toggle LED 3 on PPI FORK of PPI triggered by timer1 channel 1
-    task_addr = nrfx_gpiote_out_task_addr_get(LED3_PIN);
-    APP_ERROR_CHECK(nrfx_ppi_channel_fork_assign(ppi_channel, task_addr));
+    SET_PPI(1, 1);
+    // Toggle LED 4 on PPI FORK of PPI triggered by timer1 channel 0
+    APP_ERROR_CHECK(nrfx_gpiote_out_init(LED4_PIN, &gpiote_config));
+    task_addr = nrfx_gpiote_set_task_addr_get(LED4_PIN);
+    APP_ERROR_CHECK(nrfx_ppi_channel_fork_assign(ppi_channel[1][1], task_addr));
+    task_addr = nrfx_gpiote_clr_task_addr_get(LED4_PIN);
+    APP_ERROR_CHECK(nrfx_ppi_channel_fork_assign(ppi_channel[1][0], task_addr));
 
     nrfx_gpiote_out_task_enable(LED1_PIN);
     nrfx_gpiote_out_task_enable(LED2_PIN);
